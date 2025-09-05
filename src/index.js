@@ -15,7 +15,16 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
-
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "Welcome to All Time Yatra API 🚀",
+    docs: {
+      health: "/api/health",
+      echo: "/api/echo"
+    }
+  });
+});
 // ✅ echo route
 app.post("/api/echo", (req, res) => {
   return res.json({
