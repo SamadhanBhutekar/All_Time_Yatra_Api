@@ -1,13 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const serverless = require("serverless-http");
-const countriesRoutes = require("./routes/countries");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-app.use("/api", countriesRoutes);
 
 // ✅ Root route (Vercel homepage)
 app.get("/", (req, res) => {
