@@ -1,55 +1,77 @@
+// src/index.js
+
+// Import dependencies
 const express = require("express");
+const bodyParser = require("body-parser");
 const cors = require("cors");
-const serverless = require("serverless-http");
-const pool = require("./config/db_api");
 
+// Create Express app
 const app = express();
+
+// Middleware
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json()); // for parsing application/json
 
-// Root route
+// Dummy in-memory database
+let flocks = [
+  { id: 1, name: "Flock A", size: 100 },
+  { id: 2, name: "Flock B", size: 150 },
+];
+
+// Health check route
 app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "Welcome to All_Time_Yatra_API 🚀",
-    endpoints: {
-      health: "/api/health",
-      echo: "/api/echo",
-      dbtest: "/api/dbtest",
-    },
-  });
+  res.send({ message: "API is alive!" });
 });
 
-// Health check
-app.get("/api/health", (req, res) => {
-  res.json({
-    success: true,
-    message: "API is working ✅",
-    timestamp: new Date().toISOString(),
-  });
+// GET all flocks
+app.get("/flocks", (req, res) => {
+  res.send(flocks);
 });
 
-// DB test route
-app.get("/api/dbtest", async (req, res) => {
-  try {
-    const [rows] = await pool.query("SELECT NOW() AS currentTime");
-    res.json({ success: true, rows });
-  } catch (err) {
-    console.error("❌ DB Error:", err.message);
-    res.status(500).json({ success: false, error: err.message });
-  }
+// GET a single flock by id
+app.get("/flocks/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const flock = flocks.find((f) => f.id === id);
+  if (!flock) return res.status(404).send({ error: "Flock not found" });
+  res.send(flock);
 });
 
-// POST echo example
-app.post("/api/echo", (req, res) => {
-  res.json({ success: true, received: req.body });
+// POST create a new flock
+app.post("/flocks", (req, res) => {
+  const { name, size } = req.body;
+  if (!name || !size)
+    return res.status(400).send({ error: "Name and size required" });
+
+  const newFlock = { id: flocks.length + 1, name, size };
+  flocks.push(newFlock);
+  res.status(201).send(newFlock);
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: "Route not found" });
+// PUT update a flock
+app.put("/flocks/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const flock = flocks.find((f) => f.id === id);
+  if (!flock) return res.status(404).send({ error: "Flock not found" });
+
+  const { name, size } = req.body;
+  if (name) flock.name = name;
+  if (size) flock.size = size;
+
+  res.send(flock);
 });
 
-// Export for Vercel
-module.exports = app;
-module.exports.handler = serverless(app);
+// DELETE a flock
+app.delete("/flocks/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const index = flocks.findIndex((f) => f.id === id);
+  if (index === -1) return res.status(404).send({ error: "Flock not found" });
+
+  const deleted = flocks.splice(index, 1);
+  res.send({ message: "Flock deleted", deleted });
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
