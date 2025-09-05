@@ -3,20 +3,22 @@ const cors = require("cors");
 const serverless = require("serverless-http");
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// ✅ health route
 app.get("/api/health", (req, res) => {
-  res.json({
+  return res.json({
     success: true,
     message: "API is working ✅",
     timestamp: new Date().toISOString(),
   });
 });
 
+// ✅ echo route
 app.post("/api/echo", (req, res) => {
-  res.json({
+  return res.json({
     success: true,
     received: req.body,
   });
@@ -27,5 +29,6 @@ app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });
 });
 
+// Export for Vercel
 module.exports = app;
 module.exports.handler = serverless(app);
