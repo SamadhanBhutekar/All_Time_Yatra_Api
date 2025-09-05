@@ -4,8 +4,13 @@
   "description": "Simple Node.js API",
   "main": "src/index.js",
   "scripts": {
+<<<<<<< HEAD
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js"
+=======
     "dev": "nodemon src/index.js",
     "start": "node src/index.js"
+>>>>>>> 3404152aa5943652a8d3bb044cfa258f8cc8c2b7
   },
   "dependencies": {
     "cors": "^2.8.5",
