@@ -1,4 +1,3 @@
-// config/db_api.js
 const mysql = require("mysql2/promise");
 
 const pool = mysql.createPool({
@@ -7,9 +6,7 @@ const pool = mysql.createPool({
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 3306,
-  waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0,
 });
 
 module.exports = pool;
