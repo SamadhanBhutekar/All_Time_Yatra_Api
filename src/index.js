@@ -29,7 +29,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// DB test
+// DB test route
 app.get("/api/dbtest", async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT NOW() AS currentTime");
@@ -38,6 +38,16 @@ app.get("/api/dbtest", async (req, res) => {
     console.error("❌ DB Error:", err.message);
     res.status(500).json({ success: false, error: err.message });
   }
+});
+
+// POST echo example
+app.post("/api/echo", (req, res) => {
+  res.json({ success: true, received: req.body });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: "Route not found" });
 });
 
 // Export for Vercel
