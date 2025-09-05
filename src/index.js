@@ -1,10 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const serverless = require("serverless-http");
+const countriesRoutes = require("./routes/countries");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+app.use("/api", countriesRoutes);
 
 // ✅ Root route (Vercel homepage)
 app.get("/", (req, res) => {
@@ -13,8 +16,8 @@ app.get("/", (req, res) => {
     message: "Welcome to All Time Yatra API 🚀",
     docs: {
       health: "/api/health",
-      echo: "/api/echo"
-    }
+      echo: "/api/echo",
+    },
   });
 });
 
@@ -25,8 +28,8 @@ app.get("/api", (req, res) => {
     message: "API Base Endpoint",
     endpoints: {
       health: "/api/health",
-      echo: "/api/echo"
-    }
+      echo: "/api/echo",
+    },
   });
 });
 
@@ -54,4 +57,3 @@ app.use((req, res) => {
 
 module.exports = app;
 module.exports.handler = serverless(app);
-
