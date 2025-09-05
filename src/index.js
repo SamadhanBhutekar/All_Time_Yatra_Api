@@ -7,6 +7,29 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Root route
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "Welcome to All_Time_Yatra_API 🚀",
+    endpoints: {
+      health: "/api/health",
+      echo: "/api/echo",
+      dbtest: "/api/dbtest",
+    },
+  });
+});
+
+// Health check
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "API is working ✅",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// DB test
 app.get("/api/dbtest", async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT NOW() AS currentTime");
