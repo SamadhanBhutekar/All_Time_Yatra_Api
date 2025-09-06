@@ -1,48 +1,74 @@
 const express = require("express");
 const app = express();
 
-const router = express.Router();
-const bodyParser = require("body-parser");
-const cors = require("cors");
 const path = require("path");
-const fs = require("fs");
-const multer = require("multer");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const cors = require("cors");
 require("dotenv").config();
-const db = require("./config/db_api");
 const session = require("express-session");
+const MySQLStore = require("express-mysql-session")(session);
+
+// ✅ Database session store configuration
+const sessionOptions = {
+  host: process.env.DB_HOST || "localhost",
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "test",
+};
+
+const sessionStore = new MySQLStore(sessionOptions);
+
+// ✅ Session middleware (MySQL-backed, safe for production)
 app.use(
   session({
-    secret: "jeeyoride@admin", // use strong key in production
+    secret: process.env.SESSION_SECRET || "jeeyoride@admin", // store in .env in production
+    store: sessionStore,
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }, // secure: true only when using HTTPS
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // set true if HTTPS
+      httpOnly: true, // prevent JS access to cookies
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
   })
 );
 
-// ✅ Correctly placed CORS config (FIRST middleware)
+// ✅ Security middleware
+app.use(helmet());
+
+// ✅ Rate limiting (100 requests per 15 min per IP)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+});
+app.use(limiter);
+
+// ✅ Correctly placed CORS config
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "http://localhost:3000", // change in production
     methods: ["GET", "POST", "PUT", "PATCH"],
     credentials: true,
     allowedHeaders: ["Content-Type"],
   })
 );
+
+// ✅ JSON parsing
 app.use(express.json());
-//
-//
-// Static files (for accessing uploaded images)
-app.use("/", express.static(path.join(process.cwd(), "uploads")));
 
-app.use("drivers_kyc", express.static(__dirname + "drivers_kyc"));
+// ✅ Static files (for uploaded images & drivers_kyc)
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/drivers_kyc", express.static(path.join(__dirname, "drivers_kyc")));
 
+// ✅ Health check route
 app.get("/", (req, res) => res.send({ message: "Server is alive!" }));
 
+// ✅ Routes
 const countriesRoutes = require("./routes/countries");
-
 app.use("/api", countriesRoutes);
 
+// ✅ Server start
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
