@@ -40,5 +40,9 @@ app.use("drivers_kyc", express.static(__dirname + "drivers_kyc"));
 
 app.get("/", (req, res) => res.send({ message: "Server is alive!" }));
 
-const PORT = process.env.PORT || 3000;
+const countriesRoutes = require("./routes/countries");
+
+app.use("/api", countriesRoutes);
+
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
